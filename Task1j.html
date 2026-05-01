@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <title>Task Manager</title>
+    <style>
+        body { background-color: #f4f4f9; font-family: 'Segoe UI', Tahoma, sans-serif; display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
+        
+        #tasks { width: 90%; max-width: 600px; }
+
+        
+        .task { 
+            display: flex; align-items: center; justify-content: space-between; 
+            background: linear-gradient(45deg, #3a6b9b, #4ca1af);
+            padding: 15px 20px; 
+            border-radius: 15px; 
+            margin-bottom: 20px; 
+            color: white; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+        }
+
+        .done { 
+            background: #8cf5a4 !important; 
+            color: #2c3e50 !important; 
+            text-decoration: line-through; 
+            opacity: 0.8; 
+        }
+
+        .bt {
+            cursor: pointer; border: none; border-radius: 50%;
+            width: 40px; height: 40px; display: inline-flex;
+            align-items: center; justify-content: center;
+            margin-right: 8px; color: white !important; transition: 0.3s;
+        }
+
+        .bt-delete { background-color: #e74c3c; } /* أحمر */
+        .bt-done { background-color: #2ecc71; }   /* أخضر */
+        .bt-cancel { background-color: #95a5a6; } /* رمادي */
+        .bt-edit { background-color: #f39c12; }   /* برتقالي */
+
+        /* ضمان ظهور الأيقونة باللون الأبيض وحجم مناسب */
+        .material-symbols-outlined { font-size: 24px; color: white !important; }
+
+        .bt:hover { transform: scale(1.1); filter: brightness(1.1); }
+        #add-btn { padding: 12px 25px; border-radius: 20px; border: none; background: #2c3e50; color: white; cursor: pointer; font-weight: bold; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h2 id="title2" style="color: #2c3e50;">قائمة مهام Tarmiz</h2>
+    
+    <button id="add-btn">إضافة مهمة جديدة +</button>
+
+    <div id="tasks"></div>
+
+<script>
+    let tasks = [];
+
+    function getTasksFromStorage() {
+        let retrievedTasks = JSON.parse(localStorage.getItem("tasks"));
+        tasks = retrievedTasks ?? [
+            { title: "قراءة كتاب", date: "1/2/2026", isDone: false },
+            { title: "تعلم جافاسكريبت", date: "9/2/2026", isDone: false }
+        ];
+    }
+
+    function storeTasks() {
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+    }
+
+    function fillTaskOnThePage() {
+        document.getElementById("tasks").innerHTML = "";
+        let index = 0;
+        for (let task of tasks) {
+            let content = `
+            <div class="task ${task.isDone ? 'done' : ''}">
+                <div class="info">
+                    <h3 style="margin:0">${task.title}</h3>
+                    <small>${task.date}</small>
+                </div>
+                <div class="action">
+                  
+                    <button onclick="deleteTask(${index})" class="bt bt-delete">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
+                    
+                 
+                    <button onclick="toggleTaskCompletion(${index})" class="bt ${task.isDone ? 'bt-cancel' : 'bt-done'}">
+                        <span class="material-symbols-outlined">
+                            ${task.isDone ? 'cancel' : 'done_outline'}
+                        </span>
+                    </button>
+
+                   
+                    <button onclick="editTask(${index})" class="bt bt-edit">
+                        <span class="material-symbols-outlined">edit</span>
+                    </button>
+                </div>
+            </div>`;
+            document.getElementById("tasks").innerHTML += content;
+            index++;
+        }
+    }
+
+    getTasksFromStorage();
+    fillTaskOnThePage();
+
+    document.getElementById("add-btn").addEventListener("click", function() {
+        let now = new Date();
+        let date = now.getDate() + "/" + (now.getMonth() + 1) + "/" + now.getFullYear();
+        let taskName = prompt("الرجاء إدخال عنوان المهمة:");
+        
+        if (taskName && taskName.trim() !== "") {
+            tasks.push({ title: taskName.trim(), date: date, isDone: false });
+            storeTasks();
+            fillTaskOnThePage();
+        }
+    });
+
+    function deleteTask(index) {
+        if (confirm("هل أنت متأكد من حذف: " + tasks[index].title)) {
+            tasks.splice(index, 1);
+            storeTasks();
+            fillTaskOnThePage();
+        }
+    }
+
+    function toggleTaskCompletion(index) {
+        tasks[index].isDone = !tasks[index].isDone;
+        storeTasks();
+        fillTaskOnThePage();
+    }
+
+    function editTask(index) {
+        let newTaskTitle = prompt("تعديل المهمة:", tasks[index].title);
+        if (newTaskTitle && newTaskTitle.trim() !== "") {
+            tasks[index].title = newTaskTitle.trim();
+            storeTasks();
+            fillTaskOnThePage();
+        }
+    }
+</script>
+</body>
+</html>
